@@ -1,0 +1,166 @@
+/*******************************************************************************
+ * Copyright (c) 2011 Pieter Pareit.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * Contributors:
+ *     Pieter Pareit - initial API and implementation
+ ******************************************************************************/
+package adbconnect.handlers;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Map;
+
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.commands.IElementUpdater;
+import org.eclipse.ui.menus.UIElement;
+import org.eclipse.jface.resource.ImageDescriptor;
+
+import adbconnect.Activator;
+
+
+/**
+ * Handles the executing of the command, and the updating of the button.
+ * 
+ * TODO: ip address is currently hard-coded
+ */
+public class ConnectHandler extends AbstractHandler implements IElementUpdater {
+    
+	public ConnectHandler() {
+	}
+
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		try {
+		    // TODO: if this fails, show helpful message to user
+            new ProcessBuilder("adb", "connect", "192.168.1.103").start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+		return null;
+	}
+	
+	private void log(String message) {
+        ILog log = Activator.getDefault().getLog();
+        String pluginId = Activator.PLUGIN_ID;
+        log.log(new Status(Status.INFO, pluginId, message));
+        System.out.println(message);
+	}
+
+    /* 
+     * Updates the button. If there is a connection to an android device
+     * the on icon is shown, otherwise the off icon is shown. This uses polling.
+     * 
+     * TODO: We need a way to start this when eclipse starts.
+     * 
+     * @see org.eclipse.ui.commands.IElementUpdater#updateElement(org.eclipse.ui.menus.UIElement, java.util.Map)
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public void updateElement(final UIElement element, Map parameters) {
+        final ImageDescriptor onIcon = Activator.getImageDescriptor("icons/icon.png");
+        final ImageDescriptor offIcon = Activator.getImageDescriptor("icons/icon_off.png");
+
+        Job job = new Job("updateElement Job") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                while (true) {
+                    try {
+                        Display.getDefault().asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                boolean on = isConnected();
+                                element.setIcon(on ? onIcon : offIcon);
+                            }
+                        });
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+        job.setSystem(true);
+        job.setUser(false);
+        job.schedule();
+    }
+
+    /**
+     * @return true if there is a connection over wifi to an android device
+     */
+    private boolean isConnected() {
+        try {
+            Process p = new ProcessBuilder("adb", "devices").start();
+            p.waitFor();
+            InputStream is = p.getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String line =  br.readLine();
+            if (!line.equals("List of devices attached ")) {
+                log("Unexpected output from 'adb devices': " + line);
+            }
+            while ((line = br.readLine()) != null) {
+                String [] ss = line.split("\\s");
+                if (ss.length != 2) continue;
+                String [] ss0 = ss[0].split(":");
+                if (ss0.length != 2) continue;
+                String adress = ss0[0];
+                String port = ss0[1];
+                String device = ss[1];
+                if (adress.equals("192.168.1.103") &&
+                        port.equals("5555") && device.equals("device")) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

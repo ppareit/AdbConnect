@@ -1,0 +1,40 @@
+Eclipse plug-in to remote adb to an android device.
+
+Description
+===========
+Eclipse is often used to develop applications for Android. To debug and test the
+applications a real device (phone, tablet, ...) can be used. This device is normally
+connected to the USB of the developing machine. If you have root access on the
+Android device, it is possible to debug and test application on the device over WiFi.
+All this can be done from the command line. This plug-in automates the process from
+within Eclipse.
+
+Installation
+============
+* On the Android device:
+Install adbWireless, available from the Android market. This application will only
+work on a rooted device (code for adbWireless is available on github).
+* On the developing machine:
+Find out where eclipse puts its plug-ins, for instance on my machine this is
+~/.eclipse/org.eclipse.platform_3.5.0_155965261/plugins
+Download AdbConnect_<version>.jar and put it in the eclipse plug-in directory.
+
+Setup
+=====
+* On the Android device:
+Run adbWireless, there is also a widget available. Note the IP-address.
+* On the developing machine:
+(Re)start Eclipse. There should be a new toolbar with a button of a little Android with
+the body replaced by an antenna. Press the button.  
+
+Limitations
+===========
+Currently the IP-address is hardcoded to '192.168.1.103'. This will be fixed soon.
+
+About
+=====
+Home: https://github.com/ppareit/AdbConnect
+License: GPLv3
+Programming: Pieter Pareit
+Art design: Birgit Niemegeers
+
