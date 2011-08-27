@@ -46,26 +46,42 @@ import adbconnect.Activator;
  * TODO: ip address is currently hard-coded
  */
 public class ConnectHandler extends AbstractHandler implements IElementUpdater {
-    
-	public ConnectHandler() {
-	}
 
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		try {
-		    // TODO: if this fails, show helpful message to user
-            new ProcessBuilder("adb", "connect", "192.168.1.103").start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-		return null;
-	}
-	
-	private void log(String message) {
+    public ConnectHandler() {
+    }
+
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        Job job = new Job("Connect to adb over wifi") {
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    new ProcessBuilder("adb", "connect", "192.168.1.103").start();
+                } catch (IOException e) {
+                    String message = "Adb command not found. Is the android SDK installed? Is 'adb' in the path?";
+                    error(message);
+                    return new Status(Status.ERROR, Activator.PLUGIN_ID,
+                            message);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
+        return null;
+    }
+
+    private void error(String message) {
+        ILog log = Activator.getDefault().getLog();
+        String pluginId = Activator.PLUGIN_ID;
+        log.log(new Status(Status.ERROR, pluginId, message));
+        System.out.println(message);
+    }
+
+    private void log(String message) {
         ILog log = Activator.getDefault().getLog();
         String pluginId = Activator.PLUGIN_ID;
         log.log(new Status(Status.INFO, pluginId, message));
         System.out.println(message);
-	}
+    }
 
     /* 
      * Updates the button. If there is a connection to an android device
@@ -81,15 +97,23 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
         final ImageDescriptor onIcon = Activator.getImageDescriptor("icons/icon.png");
         final ImageDescriptor offIcon = Activator.getImageDescriptor("icons/icon_off.png");
 
-        Job job = new Job("updateElement Job") {
+        Job job = new Job("Update Adb Connect toolbar icon") {
+            boolean loop = true;
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                while (true) {
+                loop = true;
+                while (loop) {
                     try {
                         Display.getDefault().asyncExec(new Runnable() {
                             @Override
                             public void run() {
-                                boolean on = isConnected();
+                                boolean on;
+                                try {
+                                    on = isConnected();
+                                } catch (AdbNotInstalledException e) {
+                                    loop = false;
+                                    on = false;
+                                }
                                 element.setIcon(on ? onIcon : offIcon);
                             }
                         });
@@ -98,6 +122,7 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
                         e.printStackTrace();
                     }
                 }
+                return Status.CANCEL_STATUS;
             }
         };
         job.setSystem(true);
@@ -105,10 +130,15 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
         job.schedule();
     }
 
+    class AdbNotInstalledException extends Exception {
+        private static final long serialVersionUID = -5248866829075299316L;
+    }
+
     /**
      * @return true if there is a connection over wifi to an android device
+     * @throws AdbNotInstalledException 
      */
-    private boolean isConnected() {
+    private boolean isConnected() throws AdbNotInstalledException {
         try {
             Process p = new ProcessBuilder("adb", "devices").start();
             p.waitFor();
@@ -131,6 +161,9 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
                     return true;
                 }
             }
+        } catch (IOException e) {
+            // is thrown by ProcessBuilder.start() when adb is not installed, or not in path
+            throw new AdbNotInstalledException();
         } catch (Exception e) {
             e.printStackTrace();
         }
