@@ -16,7 +16,7 @@ Install adbWireless, available from the Android market. This application will on
 work on a rooted device (code for adbWireless is available on github).
 * On the developing machine:
 Find out where eclipse puts its plug-ins, for instance on my machine this is
-~/.eclipse/org.eclipse.platform_3.5.0_155965261/plugins
+~/Workspaces/.metadata/.plugins/org.eclipse.pde.core/install/
 Download AdbConnect_<version>.jar and put it in the eclipse plug-in directory.
 
 Setup
