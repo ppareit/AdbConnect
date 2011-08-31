@@ -22,7 +22,19 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -55,7 +67,10 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    new ProcessBuilder("adb", "connect", "192.168.1.103").start();
+                    String deviceIpAddress = Activator.getDeviceIpAddress();
+                    String devicePortNumber = Activator.getDevicePortNumber();
+                    new ProcessBuilder("adb", "connect", deviceIpAddress + ":" + devicePortNumber)
+                            .start();
                 } catch (IOException e) {
                     String message = "Adb command not found. Is the android SDK installed? Is 'adb' in the path?";
                     error(message);
@@ -156,8 +171,9 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
                 String adress = ss0[0];
                 String port = ss0[1];
                 String device = ss[1];
-                if (adress.equals("192.168.1.103") &&
-                        port.equals("5555") && device.equals("device")) {
+                if (adress.equals(Activator.getDeviceIpAddress()) &&
+                        port.equals(Activator.getDevicePortNumber()) &&
+                        device.equals("device")) {
                     return true;
                 }
             }

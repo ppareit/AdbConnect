@@ -29,6 +29,9 @@ public class Activator extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "AdbConnect";
+	
+	public static final String IP_ADDRESS_SETTING = "IP_ADDRESS";
+	public static final String PORT_NUMBER_SETTING = "PORT_NUMBER";
 
 	// The shared instance
 	private static Activator plugin;
@@ -75,5 +78,13 @@ public class Activator extends AbstractUIPlugin {
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
+	}
+	
+	public static String getDeviceIpAddress() {
+	    return plugin.getPreferenceStore().getString(IP_ADDRESS_SETTING);
+	}
+	
+	public static String getDevicePortNumber() {
+	    return plugin.getPreferenceStore().getString(PORT_NUMBER_SETTING);
 	}
 }

@@ -31,5 +31,14 @@
          </toolbar>
       </menuContribution>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="com.android.ide.eclipse.preferences.main"
+            class="adbconnect.preferences.Page"
+            id="AdbConnect.preferences.page"
+            name="Adb Connect">
+      </page>
+   </extension>
 
 </plugin>

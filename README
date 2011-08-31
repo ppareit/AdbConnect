@@ -22,14 +22,13 @@ Download AdbConnect_<version>.jar and put it in the eclipse plug-in directory.
 Setup
 =====
 * On the Android device:
-Run adbWireless, there is also a widget available. Note the IP-address.
+Run adbWireless, there is also a widget available. Note the IP-address and port number.
 * On the developing machine:
-(Re)start Eclipse. There should be a new toolbar with a button of a little Android with
-the body replaced by an antenna. Press the button.  
-
-Limitations
-===========
-Currently the IP-address is hardcoded to '192.168.1.103'. This will be fixed soon.
+(Re)start Eclipse. Select the menu 'Window->Preferences' and go to 'Android/Adb Connect'.
+Insert the correct IP-address and Port number. For instance as IP-address '192.168.1.103'
+and as port number '5555'. Choose 'OK' to close the preferences. There should be a 
+toolbar with a button of a little Android with the body replaced by an antenna. Press
+the button, if the antenna goes from grey to red, connection is established.  
 
 About
 =====
