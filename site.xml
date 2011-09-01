@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/AdbConnect_0.2.0.jar" id="AdbConnect" version="0.2.0"/>
+</site>
