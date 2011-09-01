@@ -1,1 +1,49 @@
-Adb Project Page
+<html>
+<head>
+<title>Adb Connect</title>
+</head>
+
+<body>
+
+<h1>Adb Connect</h1>
+Eclipse plug-in to remote adb to an android device.
+
+<h2>Description</h2>
+Eclipse is often used to develop applications for Android. To debug and test the
+applications a real device (phone, tablet, ...) can be used. This device is normally
+connected to the USB of the developing machine. If you have root access on the
+Android device, it is possible to debug and test application on the device over WiFi.
+All this can be done from the command line. This plug-in automates the process from
+within Eclipse.
+
+<h2>Installation</h2>
+<li>On the Android device:<p>
+Install adbWireless, available from the Android market. This application will only
+work on a rooted device (code for adbWireless is available on github).
+<li>On the developing machine:<p>
+From within eclipse, choose 'Help->Install New Software...' and select the site
+<code>http://ppareit.github.com/AdbConnect/</code> as update site.
+
+<h2>Usage</h2>
+<li>On the Android device:<p>
+Run adbWireless, there is also a widget available. Note the IP-address and port number.
+<li>On the developing machine:<p>
+(Re)start Eclipse. Select the menu 'Window->Preferences' and go to 'Android/Adb Connect'.
+Insert the correct IP-address and Port number. For instance as IP-address '192.168.1.103'
+and as port number '5555'. Choose 'OK' to close the preferences. There should be a 
+toolbar with a button of a little Android with the body replaced by an antenna. Press
+the button, if the antenna goes from grey to red, connection is established.  
+
+<h2>About</h2>
+<li><a href="http://ppareit.github.com/AdbConnect/">Home</a>
+<li><a href="https://github.com/ppareit/AdbConnect/">Source</a>
+<li>License: GPLv3
+<li>Programming: <a href="mailto:pieter.pareit@gmail.com">Pieter Pareit</a>
+<li>Art design: Birgit Niemegeers
+
+<p>
+You can <a href="mailto:pieter.pareit@gmail.com">mail</a> me with any comment, suggestion
+or correction.
+
+</body>
+</html>
