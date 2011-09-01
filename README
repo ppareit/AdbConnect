@@ -15,11 +15,10 @@ Installation
 Install adbWireless, available from the Android market. This application will only
 work on a rooted device (code for adbWireless is available on github).
 * On the developing machine:
-Find out where eclipse puts its plug-ins, for instance on my machine this is
-~/Workspaces/.metadata/.plugins/org.eclipse.pde.core/install/
-Download AdbConnect_<version>.jar and put it in the eclipse plug-in directory.
+From within eclipse, choose 'Help->Install New Software...' and select the site
+http://ppareit.github.com/AdbConnect/ as update site.
 
-Setup
+Usage
 =====
 * On the Android device:
 Run adbWireless, there is also a widget available. Note the IP-address and port number.
@@ -32,7 +31,8 @@ the button, if the antenna goes from grey to red, connection is established.
 
 About
 =====
-Home: https://github.com/ppareit/AdbConnect
+Home: http://ppareit.github.com/AdbConnect/
+Source: https://github.com/ppareit/AdbConnect/
 License: GPLv3
 Programming: Pieter Pareit
 Art design: Birgit Niemegeers
