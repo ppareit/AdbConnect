@@ -53,17 +53,37 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    String deviceIpAddress = Activator.getDeviceIpAddress();
-                    String devicePortNumber = Activator.getDevicePortNumber();
-                    new ProcessBuilder("adb", "connect", deviceIpAddress + ":" + devicePortNumber)
-                            .start();
-                } catch (IOException e) {
-                    String message = "Adb command not found. Is the android SDK installed? Is 'adb' in the path?";
+                    if (isConnected()) {
+                        disconnect();
+                    } else {
+                        connect();
+                    }
+                } catch (AdbNotInstalledException e) {
+                    String message = "Adb command not found. Is the android SDK " +
+                    "installed? Is 'adb' in the path?";
                     error(message);
-                    return new Status(Status.ERROR, Activator.PLUGIN_ID,
-                            message);
+                    return new Status(Status.ERROR, Activator.PLUGIN_ID, message);
                 }
                 return Status.OK_STATUS;
+            }
+
+            private void disconnect() throws AdbNotInstalledException {
+                try {
+                    new ProcessBuilder("adb", "disconnect").start();
+                }  catch (IOException e) {
+                    throw new AdbNotInstalledException();
+                }
+            }
+
+            private void connect() throws AdbNotInstalledException {
+                try {
+                    String deviceIpAddress = Activator.getDeviceIpAddress();
+                    String devicePortNumber = Activator.getDevicePortNumber();
+                    new ProcessBuilder("adb", "connect",
+                            deviceIpAddress + ":" + devicePortNumber).start();
+                }  catch (IOException e) {
+                    throw new AdbNotInstalledException();
+                }
             }
         };
         job.schedule();
@@ -90,14 +110,13 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
      * 
      * TODO: We need a way to start this when eclipse starts.
      * 
-     * @see org.eclipse.ui.commands.IElementUpdater#updateElement(org.eclipse.ui.menus.UIElement, java.util.Map)
      */
     @SuppressWarnings("unchecked")
     @Override
     public void updateElement(final UIElement element, Map parameters) {
         final ImageDescriptor onIcon = Activator.getImageDescriptor("icons/icon.png");
         final ImageDescriptor offIcon = Activator.getImageDescriptor("icons/icon_off.png");
-
+        
         Job job = new Job("Update Adb Connect toolbar icon") {
             boolean loop = true;
             @Override
@@ -116,6 +135,7 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
                                     on = false;
                                 }
                                 element.setIcon(on ? onIcon : offIcon);
+                                element.setChecked(on);
                             }
                         });
                         Thread.sleep(1000);

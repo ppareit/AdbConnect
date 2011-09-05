@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-
    <extension
          point="org.eclipse.ui.commands">
       <command
@@ -26,6 +25,7 @@
                   commandId="AdbConnect.commands.adbConnect"
                   icon="icons/icon_off.png"
                   tooltip="Connect to an ADB server over WIFI"
+                  style="toggle"
                   id="AdbConnect.toolbars.adbConnect">
             </command>
          </toolbar>
@@ -40,5 +40,4 @@
             name="Adb Connect">
       </page>
    </extension>
-
 </plugin>
