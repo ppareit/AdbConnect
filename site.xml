@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/AdbConnectFeature_0.4.1.jar" id="AdbConnectFeature" version="0.4.1"/>
+   <feature url="features/AdbConnect_0.3.0.jar" id="AdbConnect" version="0.3.0">
+      <category name="adb_connect_category"/>
+   </feature>
+   <category-def name="adb_connect_category" label="Adb Connect Category"/>
 </site>
