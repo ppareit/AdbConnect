@@ -9,3 +9,6 @@ Require-Bundle: org.eclipse.ui,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: ppareit
+Export-Package: adbconnect,
+ adbconnect.handlers,
+ adbconnect.preferences
