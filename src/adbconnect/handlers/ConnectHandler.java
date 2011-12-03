@@ -4,15 +4,15 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * Contributors:
  *     Pieter Pareit - initial API and implementation
  ******************************************************************************/
@@ -63,24 +63,36 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
                     "installed? Is 'adb' in the path?";
                     error(message);
                     return new Status(Status.ERROR, Activator.PLUGIN_ID, message);
+                } catch (UnableToConnectException e) {
+                    String message = "Unable to connect to device. Is ADB Wireless " +
+                            "running on the device? Is the plugin listening to the " +
+                            "correct IP address and port? See " +
+                            "Window->Preferences->Android->Adb Connect.";
+                    error(message);
+                    return new Status(Status.ERROR, Activator.PLUGIN_ID, message);
                 }
                 return Status.OK_STATUS;
             }
 
             private void disconnect() throws AdbNotInstalledException {
                 try {
-                    new ProcessBuilder("adb", "disconnect").start();
+                    String path = Activator.getPathToAdb();
+                    new ProcessBuilder(path + "adb", "disconnect").start();
                 }  catch (IOException e) {
                     throw new AdbNotInstalledException();
                 }
             }
 
-            private void connect() throws AdbNotInstalledException {
+            private void connect() throws AdbNotInstalledException, UnableToConnectException {
                 try {
                     String deviceIpAddress = Activator.getDeviceIpAddress();
                     String devicePortNumber = Activator.getDevicePortNumber();
-                    new ProcessBuilder("adb", "connect",
+                    String path = Activator.getPathToAdb();
+                    new ProcessBuilder(path + "adb", "connect",
                             deviceIpAddress + ":" + devicePortNumber).start();
+                    if (!isConnected()) {
+                        throw new UnableToConnectException();
+                    }
                 }  catch (IOException e) {
                     throw new AdbNotInstalledException();
                 }
@@ -104,19 +116,18 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
         System.out.println(message);
     }
 
-    /* 
+    /*
      * Updates the button. If there is a connection to an android device
      * the on icon is shown, otherwise the off icon is shown. This uses polling.
-     * 
+     *
      * TODO: We need a way to start this when eclipse starts.
-     * 
+     *
      */
-    @SuppressWarnings("unchecked")
     @Override
     public void updateElement(final UIElement element, Map parameters) {
         final ImageDescriptor onIcon = Activator.getImageDescriptor("icons/icon.png");
         final ImageDescriptor offIcon = Activator.getImageDescriptor("icons/icon_off.png");
-        
+
         Job job = new Job("Update Adb Connect toolbar icon") {
             boolean loop = true;
             @Override
@@ -155,13 +166,18 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
         private static final long serialVersionUID = -5248866829075299316L;
     }
 
+    class UnableToConnectException extends Exception {
+        private static final long serialVersionUID = 8654782403751782352L;
+    }
+
     /**
      * @return true if there is a connection over wifi to an android device
-     * @throws AdbNotInstalledException 
+     * @throws AdbNotInstalledException
      */
     private boolean isConnected() throws AdbNotInstalledException {
         try {
-            Process p = new ProcessBuilder("adb", "devices").start();
+            String path = Activator.getPathToAdb();
+            Process p = new ProcessBuilder(path + "adb", "devices").start();
             p.waitFor();
             InputStream is = p.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
