@@ -18,6 +18,8 @@
  ******************************************************************************/
 package adbconnect;
 
+import java.io.File;
+
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -96,6 +98,6 @@ public class Activator extends AbstractUIPlugin {
 	public static String getPathToAdb() {
 	    IPreferenceStore ps = new ScopedPreferenceStore(InstanceScope.INSTANCE,
 	            "com.android.ide.eclipse.adt");
-	    return ps.getString("com.android.ide.eclipse.adt.sdk") + "/platform-tools/";
+	    return ps.getString("com.android.ide.eclipse.adt.sdk") + File.separator + "platform-tools" + File.separator;
 	}
 }
