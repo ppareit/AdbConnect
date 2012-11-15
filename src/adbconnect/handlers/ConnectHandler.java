@@ -15,6 +15,7 @@
  *
  * Contributors:
  *     Pieter Pareit - initial API and implementation
+ *     Andrew Dunn - implemented connection timeout
  ******************************************************************************/
 package adbconnect.handlers;
 
@@ -22,6 +23,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -56,7 +59,7 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
                     if (isConnected()) {
                         disconnect();
                     } else {
-                        connect();
+                        connect(monitor);
                     }
                 } catch (AdbNotInstalledException e) {
                     String message = "Adb command not found. Is the android SDK " +
@@ -83,14 +86,15 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
                 }
             }
 
-            private void connect() throws AdbNotInstalledException, UnableToConnectException {
+            private void connect(final IProgressMonitor monitor) throws AdbNotInstalledException, UnableToConnectException {
                 try {
                     String deviceIpAddress = Activator.getDeviceIpAddress();
                     String devicePortNumber = Activator.getDevicePortNumber();
                     String path = Activator.getPathToAdb();
+                    String serialNumber = deviceIpAddress + ":" + devicePortNumber;
                     new ProcessBuilder(path + "adb", "connect",
                             deviceIpAddress + ":" + devicePortNumber).start();
-                    if (!isConnected()) {
+                    if (!waitForDevice(serialNumber,monitor)) {
                         throw new UnableToConnectException();
                     }
                 }  catch (IOException e) {
@@ -161,6 +165,7 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
         job.setUser(false);
         job.schedule();
     }
+    
 
     class AdbNotInstalledException extends Exception {
         private static final long serialVersionUID = -5248866829075299316L;
@@ -207,31 +212,84 @@ public class ConnectHandler extends AbstractHandler implements IElementUpdater {
         }
         return false;
     }
+
+    /**
+     * Wait for a device with a given serial number to be connected, or for the connection
+     * to time out
+     * 
+     * @param devSerial string that identifies a device
+     * @return true if connected
+     * @throws AdbNotInstalledException if ADB could not be found
+     */
+    private boolean waitForDevice(final String devSerial,
+            final IProgressMonitor monitor) throws AdbNotInstalledException {
+        String path = Activator.getPathToAdb();
+        final List<String> cmdStrings = new ArrayList<String>();
+        cmdStrings.add(path + "adb");
+        cmdStrings.add("-s");
+        cmdStrings.add(devSerial);
+        cmdStrings.add("wait-for-device");
+        int timeLeft = 5000; // TODO: Make this an option?
+
+        try {
+            final Process p = new ProcessBuilder(cmdStrings).start();
+            WaitForDevWorker worker = new WaitForDevWorker(p);
+            worker.start();
+
+            while (!monitor.isCanceled() && !worker.isComplete()) {
+                try {
+                    worker.join(300);
+                    timeLeft -= 300;
+                    if (timeLeft < 0) {
+                        worker.interrupt();
+                        break;
+                    }
+                } catch (InterruptedException e) {
+                    return false;
+                }
+            }
+            return worker.getExit() == 0;
+
+        } catch (IOException e) {
+            throw new AdbNotInstalledException();
+        }
+    }
+
+    /** Waits for a device to appear using ADB */
+    private final class WaitForDevWorker extends Thread {
+
+        /** Return code from adb process, only valid if complete is true */
+        private int exit = -1;
+
+        /** Set to true when the process returns */
+        private boolean complete = false;
+
+        private final Process process;
+
+        /** Construct a worker thread to execute a process */
+        public WaitForDevWorker(final Process process) {
+            super("ADbConnectWaitForDevice");
+            this.process = process;
+            setDaemon(true);
+        }
+
+        @Override
+        public void run() {
+            try {
+                exit = process.waitFor();
+                complete = true;
+            } catch (InterruptedException ignore) {
+                return;
+            }
+        }
+
+        public int getExit() {
+            return exit;
+        }
+
+        public boolean isComplete() {
+            return complete;
+        }
+
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
